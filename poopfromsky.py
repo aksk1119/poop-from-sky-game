@@ -1,6 +1,7 @@
 import pygame
 from random import randrange
 from character import Character
+from level_manager import LevelManager
 
 ##########################################################################
 # Initialization
@@ -37,17 +38,11 @@ poop_image = pygame.image.load(poop_image_file)
 poop_size = poop_image.get_rect().size
 poop_width = poop_size[0] # Width
 poop_height = poop_size[1] # Height
-poop_speed = 2
 poops = []
 poop_start_time = pygame.time.get_ticks()
-poop_create_interval = 2000
 
-# Font setting
-game_font = pygame.font.Font(None, 40) # Creating Font Object
-
-# Other variables
-score = 0
-
+# Game manager object
+game_manager = LevelManager()
 
 # Event loop
 game_running = True
@@ -85,19 +80,7 @@ while game_running:
     x, y = poop.getPosition()
     if y > screen_height: # Removing the poop when it hits the floor
       poops.pop(index)
-      score += 1
-      if score == 5:
-        poop_speed += 4
-        poop_create_interval -= 300
-      elif score == 10:
-        poop_speed += 4
-        poop_create_interval -= 300
-      elif score == 20:
-        poop_speed += 4
-        poop_create_interval -= 300
-      elif score == 40:
-        poop_speed += 4
-        poop_create_interval -= 300
+      game_manager.setScore()
     poop.setPosition(x, y + poop_speed)
     index += 1
 
@@ -123,8 +106,7 @@ while game_running:
   for poop in poops:
     poop.draw(screen)
   
-  score_obj = game_font.render(str(score), True, (255,255,255))
-  screen.blit(score_obj,(10, 10))
+  game_manager.displayCurrScore(screen)
   
   pygame.display.update() # Draw Game screen
 
