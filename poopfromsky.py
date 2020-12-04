@@ -17,13 +17,22 @@ pygame.display.set_caption("똥피하기") # The name of the game
 
 # FPS Setting
 clock = pygame.time.Clock()
-fps_value = 30
+fps_value = 60
 
 # Load background image
 background = pygame.image.load("images/background.png")
+
 ##########################################################################
 
 # Game Initialization (Background, images, position, font)
+
+# Initialize the sound
+pygame.mixer.music.load("music/bgm.mp3")
+pygame.mixer.music.play(-1)
+
+drop_sound = pygame.mixer.Sound("music/poop-drop.mp3")
+death_sound = pygame.mixer.Sound("music/death.mp3")
+
 # Instantiate and initialize the player
 player = Character("images/character.png")
 character_x_pos = (screen_width / 2) - (player.width / 2)
@@ -79,19 +88,22 @@ while game_running:
   for poop in poops:
     x, y = poop.getPosition()
     if y > screen_height: # Removing the poop when it hits the floor
+      pygame.mixer.Sound.play(drop_sound)
       poops.pop(index)
       game_manager.setScore()
-    poop.setPosition(x, y + poop_speed)
+    poop.setPosition(x, y + game_manager.game_speed*dt)
     index += 1
 
     # Collision process
     if player.isCollidingWith(poop):
-      print("Hit by poop!")
+      # print("Hit by poop!")
+      pygame.mixer.Sound.play(death_sound)
+      pygame.time.delay(1000)
       game_running = False
 
   # Create poop every 2 seconds
   current_time = pygame.time.get_ticks()
-  if (current_time - poop_start_time) >= poop_create_interval:
+  if (current_time - poop_start_time) >= game_manager.spawn_interval:
     poop_start_time = current_time
     pos = randrange(screen_width - poop_width)
     poop = Character(poop_image_file)
@@ -100,7 +112,6 @@ while game_running:
   
   # Draw on the screen
   screen.blit(background, (0, 0)) # Insert background
-
   player.draw(screen)
 
   for poop in poops:
@@ -110,8 +121,9 @@ while game_running:
   
   pygame.display.update() # Draw Game screen
 
-# print(pygame.font.get_fonts())
-pygame.time.delay(2000)
+game_manager.gameover(screen)
+pygame.display.update()
+pygame.time.delay(1000)
 
 # pygame exit
 pygame.quit()
